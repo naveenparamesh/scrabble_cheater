@@ -80,56 +80,5 @@ struct Trie {
         isEOW = false;
     }
 };
-
-int main() {
-    Trie root;
-     string temp = "";
-    // vector<string> results;
-    string andy = "andy";
-     root.insert(&*andy.begin(), 4);
-    // root.insert("nanny", 5);
-    // root.insert("aa", 2);
-    // root.insert("and", 3);
-    // root.insert("nay", 3);
-    // root.insert("anestri", 7);
-    root.printAll(temp);
-
-    // map<char, int> rack;
-    // rack['a'] = 1;
-    // rack['n'] = 3;
-    // rack['d'] = 1;
-    // rack['y'] = 2;
-    // root.getRackWords(temp, rack, results);
-    // for(vector<string>::iterator it = results.begin(); it!= results.end(); it++){
-    //     cout << *it << endl;
-    // }
     
-//      ifstream infile("words.txt");//wrds.txt");
-// 	 string word;
-//      while (getline(infile, word)){
-//          root.insert(&*word.begin(), word.length());
-// 	 }
-// 	 infile.close();
-	 
-// 	string temp = "";
-// 	map<char, int> rack;
-// 	vector<string> results;
-//     rack['r'] = 1;
-//     rack['e'] = 1;
-//     rack['t'] = 1;
-//     rack['i'] = 1;
-//     rack['n'] = 1;
-//     rack['a'] = 1;
-//     rack['s'] = 1;
-//     root.getRackWords(temp, rack, results);
-//     for(vector<string>::iterator it = results.begin(); it!= results.end(); it++){
-//         cout << *it << endl;
-//     }
-	 
-	 
-    
-    
-    
-    
-    
-}
+}// end of struct
