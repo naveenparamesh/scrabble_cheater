@@ -140,10 +140,10 @@ int main(){
 	 
 	//string temp = "";
 	map<char, int> rack;
-	map<string, WordInfo*>& validWords;
+	map<string, WordInfo*> validWords;
 	for(int i = 0; i < rackLetters.length(); i++){
 		map<char, Trie*>::iterator result = rack.find(rackLetters.at(i));
-		if(result != children.end()){//if letter is already existing in the rack, just increment value by 1
+		if(result != rack.end()){//if letter is already existing in the rack, just increment value by 1
 			rack[rackLetters.at(i)] += 1;	
 		}
 		else {
@@ -152,6 +152,9 @@ int main(){
 	}
 	
 	root.findValidNewWords(rack, myBoard, validWords);
+	//sort the validWords by score now
+	//then create a print function that would iterate through the map which would finally hold the top 20 words,
+	// the word, its row and column of the first letter, its orientation, its score
     
     root.getRackWords(temp, rack, results);
     for(vector<string>::iterator it = results.begin(); it!= results.end(); it++){
