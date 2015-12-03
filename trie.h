@@ -7,14 +7,12 @@
 #include <sstream>
 using namespace std;
 
-
-
 struct WordInfo {
-    private:
+    public:
         int row, column;
         bool across;
         int score;
-    public:
+        
         WordInfo(int theRow, int theCol, bool isAcross, int theScore){
             row = theRow;
             column = theCol;
@@ -66,7 +64,9 @@ struct Trie {
     
     void getRackWords(const string& prefix, map<char, int>& rack, char tileLetter, vector<string>& results){
         if (isEOW){
-            results.push_back(prefix);
+           if (prefix.find(tileLetter) != string::npos){//only add word into vector if it includes the tileLetter in the word
+                results.push_back(prefix);  
+            }
         }
         
         for(map<char, Trie*>::iterator it = children.begin(); it != children.end(); it++){
@@ -112,9 +112,6 @@ struct Trie {
                 }
             }
         }
-        
-        
-        
         // now trie is at the last letter spot, and we can now figure out if there are any words that can be made 
     }
     
