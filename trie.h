@@ -462,6 +462,7 @@ struct Trie {
                     }
                     // use wildcard if there are no more valid words found
                     else if(rack.find('*') != rack.end()  && rack['*'] > 0 && validDown(myBoard, row, col + offset, root, it->first)){
+                            wildcardIndices.push_back(offset);
                             offset += 1;
                             rack['*'] -= 1;
                             it->second->getRackWords(prefix + it->first, rack, row, col, myBoard, validWords, letterValues, root, offset, across, wildcardIndices);
