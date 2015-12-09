@@ -167,7 +167,7 @@ struct Trie {
      // as -> 2
      // ask -> 7
      // asks -> 8
-    int computeScore(string word, char myBoard[15][15], int row, int col, bool across, map<char, int>& rack, map<char, int>& letterValues){
+    int computeScore(string word, char myBoard[15][15], int row, int col, bool across, map<char, int> rack, map<char, int>& letterValues){
         int score = 0;
         //bool bingoBonus = false;
         int letterCount = 0;
@@ -228,12 +228,12 @@ struct Trie {
                                 // triple word tile
                                 else if(myBoard[tempRow][col + i] == '9' && word.at(i) != '*'){
                                     score_intersection += letterValues[word.at(i)];
-                                    doubleWord = true;
+                                    tripleWord = true;
                                 }
                                 // double word tile
                                 else if(myBoard[tempRow][col + i] == '4' && word.at(i) != '*'){
                                     score_intersection += letterValues[word.at(i)];
-                                    tripleWord = true;
+                                    doubleWord = true;
                                 }
                                 else { // no bonuses
                                     score_intersection += letterValues[word.at(i)];    
@@ -317,13 +317,12 @@ struct Trie {
                                 else if(myBoard[row + i][tempCol] == '9' && word.at(i) != '*'){
                                     // cout << "score so far for word " << word << " is: " << score << endl;
                                     score_intersection += letterValues[word.at(i)];
-                                    doubleWord = true;
+                                    tripleWord = true;
                                 }
                                 else if(myBoard[row + i][tempCol] == '4' && word.at(i) != '*'){
                                     // cout << "score so far for word " << word << " is: " << score << endl;
-                                    
                                     score_intersection += letterValues[word.at(i)];
-                                    tripleWord = true;
+                                    doubleWord = true;
                                 }
                                 else {
                                     // cout << "score so far for word " << word << " is: " << score << endl;
@@ -344,7 +343,7 @@ struct Trie {
                             }
                        }
                        
-                      
+                    
                        
                        // computes intersection double and triple word score:
                        if(doubleWord){
@@ -368,7 +367,7 @@ struct Trie {
             //     }
             if(rack.find(word.at(i)) != rack.end() && rack[word.at(i)] == 0){
                 //cout << "gets to line 182" << endl;
-                //rack[word.at(i)] -= 1;
+                rack[word.at(i)] -= 1;
                 letterCount++;
             }
           }
@@ -381,7 +380,6 @@ struct Trie {
             
             
         if(letterCount == 7){//if all 7 rack letters are used then add a bingo bonus
-        cout << "bingo for: " << word << endl;
             score += 50;
         }
        
