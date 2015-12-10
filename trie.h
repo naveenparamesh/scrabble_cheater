@@ -167,7 +167,7 @@ struct Trie {
      // as -> 2
      // ask -> 7
      // asks -> 8
-    int computeScore(string word, char myBoard[15][15], int row, int col, bool across, map<char, int> rack, map<char, int>& letterValues){
+    int computeScore(string word, char myBoard[15][15], int row, int col, bool across, map<char, int> rack, map<char, int>& letterValues, bool wildCardSpots[15][15]){
         int score = 0;
         //bool bingoBonus = false;
         int letterCount = 0;
@@ -242,7 +242,9 @@ struct Trie {
                                 tempRow += 1;
                         }
                         else {
-                                score_intersection += letterValues[myBoard[tempRow][col + i]];
+                                if(!wildCardSpots[tempRow][col + i]){//if this spot isn't a wild card tile, then add normal value
+                                    score_intersection += letterValues[myBoard[tempRow][col + i]];    
+                                }
                                 tempRow += 1;
                             }
                        }
@@ -274,7 +276,6 @@ struct Trie {
                     }
                 }
                
-                
                 // computing with double and triple word tiles
                 for(int i = 0; i < word.length(); i++){
                     if(myBoard[row + i][col] == '9' && word.at(i) != '*'){
@@ -337,14 +338,14 @@ struct Trie {
                         }
                         else {
                                 // cout << "score so far for word " << word << " is: " << score << endl;
-                                
-                                score_intersection += letterValues[myBoard[row + i][tempCol]];
+                                if(!wildCardSpots[row + i][tempCol]){//if this spot isn't a wild card tile, then add normal value
+                                    score_intersection += letterValues[myBoard[row + i][tempCol]];    
+                                }
                                 tempCol += 1;
                             }
                        }
                        
                     
-                       
                        // computes intersection double and triple word score:
                        if(doubleWord){
                             // cout << "score so far for word " << word << " is: " << score << endl;
@@ -391,7 +392,7 @@ struct Trie {
     }
     
     // find all words that are playable from board with the rack letters
-    void getRackWords(const string& prefix, map<char, int>& rack, int row, int col, char myBoard[15][15], priority_queue<WordInfo*, vector<WordInfo*>, score_less >& validWords, map<char, int>& letterValues, Trie* root, int offset, bool across, vector<int>& wildcardIndices){
+    void getRackWords(const string& prefix, map<char, int>& rack, int row, int col, char myBoard[15][15], priority_queue<WordInfo*, vector<WordInfo*>, score_less >& validWords, map<char, int>& letterValues, Trie* root, int offset, bool across, vector<int>& wildcardIndices, bool wildCardSpots[15][15]){
         if(across){
             if (isEOW){//insert into priority queue, if end of word is reached and its not a word already on the board
                 bool validWord = false;
@@ -424,14 +425,15 @@ struct Trie {
                         //cout << prefix << " is valid across " << "at: "<< row << ", " << col << endl; 
                         string word = "";
                         for(int i = 0; i < prefix.length(); i++){
-                            if(find(wildcardIndices.begin(), wildcardIndices.end(), i) != wildcardIndices.end()){
+                            if((find(wildcardIndices.begin(), wildcardIndices.end(), i) != wildcardIndices.end()) ||
+                               wildCardSpots[row][col + i] == true){
                                 word += '*';
                             }
                             else {
                                 word += prefix.at(i);
                             }
                         }
-                      int score = computeScore(word, myBoard, row, col, true, rack, letterValues);
+                      int score = computeScore(word, myBoard, row, col, true, rack, letterValues, wildCardSpots);
                       validWords.push(new WordInfo(prefix, row, col, across, score));
                         
                     }
@@ -454,7 +456,7 @@ struct Trie {
                             //cout << "letter at offset " << offset << " is: " << it->first << endl;
                             offset += 1;
                             rack[it->first] -=1;
-                            it->second->getRackWords(prefix + it->first, rack, row, col, myBoard, validWords, letterValues, root, offset, across, wildcardIndices);
+                            it->second->getRackWords(prefix + it->first, rack, row, col, myBoard, validWords, letterValues, root, offset, across, wildcardIndices, wildCardSpots);
                             offset -= 1;
                             rack[it->first] +=1;
                     }
@@ -463,7 +465,7 @@ struct Trie {
                             wildcardIndices.push_back(offset);
                             offset += 1;
                             rack['*'] -= 1;
-                            it->second->getRackWords(prefix + it->first, rack, row, col, myBoard, validWords, letterValues, root, offset, across, wildcardIndices);
+                            it->second->getRackWords(prefix + it->first, rack, row, col, myBoard, validWords, letterValues, root, offset, across, wildcardIndices, wildCardSpots);
                             offset -= 1;
                             rack['*'] +=1;
                             wildcardIndices.pop_back();
@@ -475,7 +477,7 @@ struct Trie {
                 //cout << "bottom letter at offset " << offset << " is: " << letter << endl; 
                 if(hasChild(letter)){
                     offset += 1;
-                    children[letter]->getRackWords(prefix + letter, rack, row, col, myBoard, validWords, letterValues, root, offset, across, wildcardIndices);
+                    children[letter]->getRackWords(prefix + letter, rack, row, col, myBoard, validWords, letterValues, root, offset, across, wildcardIndices, wildCardSpots);
                 }
                 
                 
@@ -494,7 +496,7 @@ struct Trie {
                     
                   int tempRow = row;
                     string temp = "";
-                    while((tempRow - 1) >= 0 && isalpha(myBoard[tempRow][col])){
+                    while((tempRow - 1) >= 0 && isalpha(myBoard[tempRow - 1][col])){
                         tempRow -= 1;
                     }
                     while(tempRow < row){
@@ -507,20 +509,21 @@ struct Trie {
                         temp += myBoard[tempRow][col];
                         tempRow += 1;
                     }
-                    //cout << "temp is: " << temp << endl;
+               
+                    
                     if(root->hasWord(&*temp.begin(), temp.length())){
                       //  cout << prefix << " is valid down" << "at: "<< row << ", " << col << endl; 
-                     
                             string word = "";
                             for(int i = 0; i < prefix.length(); i++){
-                                if(find(wildcardIndices.begin(), wildcardIndices.end(), i) != wildcardIndices.end()){
+                                if((find(wildcardIndices.begin(), wildcardIndices.end(), i) != wildcardIndices.end()) ||
+                                   wildCardSpots[row + i][col] == true){
                                     word += '*';
                                 }
                                 else {
                                     word += prefix.at(i);
                                 }
                             }
-                             int score = computeScore(word, myBoard, row, col, false, rack, letterValues);
+                             int score = computeScore(word, myBoard, row, col, false, rack, letterValues, wildCardSpots);
                              validWords.push(new WordInfo(prefix, row, col, across, score));
                         
                        
@@ -545,7 +548,7 @@ struct Trie {
                         
                             offset += 1;
                             rack[it->first] -=1;
-                            it->second->getRackWords(prefix + it->first, rack, row, col, myBoard, validWords, letterValues, root, offset, across, wildcardIndices);
+                            it->second->getRackWords(prefix + it->first, rack, row, col, myBoard, validWords, letterValues, root, offset, across, wildcardIndices, wildCardSpots);
                             offset -= 1;
                             rack[it->first] +=1;
                     }
@@ -554,7 +557,7 @@ struct Trie {
                             wildcardIndices.push_back(offset);
                             offset += 1;
                             rack['*'] -= 1;
-                            it->second->getRackWords(prefix + it->first, rack, row, col, myBoard, validWords, letterValues, root, offset, across, wildcardIndices);
+                            it->second->getRackWords(prefix + it->first, rack, row, col, myBoard, validWords, letterValues, root, offset, across, wildcardIndices, wildCardSpots);
                             offset -= 1;
                             rack['*'] +=1;
                             wildcardIndices.pop_back();
@@ -567,7 +570,7 @@ struct Trie {
                 if(hasChild(letter)){
                    //cout << "happened at bottom for " << letter << endl;
                    offset += 1;
-                    children[letter]->getRackWords(prefix + letter, rack, row, col, myBoard, validWords, letterValues, root, offset, across, wildcardIndices);
+                    children[letter]->getRackWords(prefix + letter, rack, row, col, myBoard, validWords, letterValues, root, offset, across, wildcardIndices, wildCardSpots);
                 }
                
             }
@@ -575,7 +578,7 @@ struct Trie {
         
     }
     
-    void getFirstMoves(const string& prefix, map<char, int>& rack, char myBoard[15][15], int row, int col, priority_queue<WordInfo*, vector<WordInfo*>, score_less >& validWords, map<char, int>& letterValues, vector<int>& wildcardIndices, int offset){
+    void getFirstMoves(const string& prefix, map<char, int>& rack, char myBoard[15][15], int row, int col, priority_queue<WordInfo*, vector<WordInfo*>, score_less >& validWords, map<char, int>& letterValues, vector<int>& wildcardIndices, int offset, bool wildCardSpots[15][15]){
         if (isEOW){
             for(int i = 0; i < prefix.length(); i++){
                 if(col + i == 7){
@@ -589,7 +592,7 @@ struct Trie {
                         }
                     }
                     
-                        int score = computeScore(word, myBoard, row, col, false, rack, letterValues);
+                        int score = computeScore(word, myBoard, row, col, false, rack, letterValues, wildCardSpots);
                         validWords.push(new WordInfo(prefix, row, col, true, score));
                     
                    
@@ -601,7 +604,7 @@ struct Trie {
             if (rack.find(it->first) != rack.end() && rack[it->first] > 0){
                     offset += 1;
                     rack[it->first] -=1;
-                    it->second->getFirstMoves(prefix + it->first, rack, myBoard, row, col, validWords, letterValues, wildcardIndices, offset);
+                    it->second->getFirstMoves(prefix + it->first, rack, myBoard, row, col, validWords, letterValues, wildcardIndices, offset, wildCardSpots);
                     rack[it->first] +=1;
                     offset -= 1;
             }
@@ -609,7 +612,7 @@ struct Trie {
                     wildcardIndices.push_back(offset);
                     offset += 1;
                     rack['*'] -= 1;
-                    it->second->getFirstMoves(prefix + it->first, rack, myBoard, row, col, validWords, letterValues, wildcardIndices, offset);
+                    it->second->getFirstMoves(prefix + it->first, rack, myBoard, row, col, validWords, letterValues, wildcardIndices, offset, wildCardSpots);
                     rack['*'] +=1;
                     offset -= 1;
                     wildcardIndices.pop_back();
@@ -621,10 +624,10 @@ struct Trie {
     bool isPlayable(int row, int col, char myBoard[15][15], bool across){
         if(across){
              if(isalpha(myBoard[row][col])){//if current position is a letter -> false
-                    return false;// this should be false because you can't start playing a word in a spot that is already occupied
+                    return true;// this should be false because you can't start playing a word in a spot that is already occupied
                 }
             for(int i = 1; i <= 7; i++){
-                if((col + i) < 15 && isalpha(myBoard[row][col + i])){
+                if((col + i) < 15 && (isalpha(myBoard[row][col + i]) || isalpha(myBoard[row + 1][col + i]) || isalpha(myBoard[row - 1][col + i]))){
                     return true; // place to start a word-> letter on board
                 }
                 if((col + i) >= 15){
@@ -635,10 +638,10 @@ struct Trie {
         }
         else {//check down
                 if(isalpha(myBoard[row][col])){//if current position is a letter -> true
-                    return false;
+                    return true;
                 }
             for(int i = 1; i <= 7; i++){
-                if((row + i) < 15 && isalpha(myBoard[row + i][col])){
+                if((row + i) < 15 && (isalpha(myBoard[row + i][col]) || isalpha(myBoard[row + i][col + 1]) || isalpha(myBoard[row + i][col - 1]))){
                     return true; // place to start a word-> letter on board
                 }
                 if((row + i) >= 15){
@@ -649,25 +652,25 @@ struct Trie {
         }
     }
     
-    void findEmptyValidWords(map<char, int>& rack, char myBoard[15][15], priority_queue<WordInfo*, vector<WordInfo*>, score_less >& validWords, map<char, int>& letterValues, vector<int>& wildcardIndices){
+    void findEmptyValidWords(map<char, int>& rack, char myBoard[15][15], priority_queue<WordInfo*, vector<WordInfo*>, score_less >& validWords, map<char, int>& letterValues, vector<int>& wildcardIndices, bool wildCardSpots[15][15]){
         string temp = "";
         for(int col = 0; col < 7; col++){
-            getFirstMoves(temp, rack, myBoard, 7, col, validWords, letterValues, wildcardIndices, 0);
+            getFirstMoves(temp, rack, myBoard, 7, col, validWords, letterValues, wildcardIndices, 0, wildCardSpots);
         }
     }
     
     // gets every single valid word that can be played on the board 
-    void findValidWords(map<char, int>& rack, char myBoard[15][15], priority_queue<WordInfo*, vector<WordInfo*>, score_less >& validWords, map<char, int>& letterValues, vector<int>& wildcardIndices){
+    void findValidWords(map<char, int>& rack, char myBoard[15][15], priority_queue<WordInfo*, vector<WordInfo*>, score_less >& validWords, map<char, int>& letterValues, vector<int>& wildcardIndices, bool wildCardSpots[15][15]){
         string temp = "";
         for(int row = 0; row < 15; row++){
             for(int col = 0; col < 15; col++){
                 bool playable_across = isPlayable(row, col, myBoard, true);
                 bool playable_down = isPlayable(row, col, myBoard, false);
                 if(playable_across){
-                    getRackWords(temp, rack, row, col, myBoard, validWords, letterValues, this, 0, true, wildcardIndices);
+                    getRackWords(temp, rack, row, col, myBoard, validWords, letterValues, this, 0, true, wildcardIndices, wildCardSpots);
                 }
                 if(playable_down){
-                    getRackWords(temp, rack, row, col, myBoard, validWords, letterValues, this, 0, false, wildcardIndices);    
+                    getRackWords(temp, rack, row, col, myBoard, validWords, letterValues, this, 0, false, wildcardIndices, wildCardSpots);    
                 }
                 
             }

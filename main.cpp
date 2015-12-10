@@ -6,6 +6,7 @@
 #include <cctype>
 #include <queue>
 #include <algorithm>
+#include <ctype.h>
 
 using namespace std;
 
@@ -34,7 +35,7 @@ using namespace std;
 // 	}
 // }
 
-void setBoard(char myBoard[15][15], bool& isBoardEmpty){
+void setBoard(char myBoard[15][15], bool& isBoardEmpty, bool wildCardSpots[15][15]){
      ifstream boardFile("board.txt");
 	 char my_character;
 	 //string word = "";
@@ -59,6 +60,12 @@ void setBoard(char myBoard[15][15], bool& isBoardEmpty){
 	           //  cout << "column is: " << column << endl;
 	           	 if(isalpha(my_character)){
 	           	 	isBoardEmpty = false;
+	           	 }
+	           	 if(isalpha(my_character) && islower(my_character)){//then set that spot on the board for wildcardspots to true
+	           	 	wildCardSpots[row][column] = true;
+	           	 }
+	           	 else {
+	           	 	wildCardSpots[row][column] = false;
 	           	 }
 	             myBoard[row][column] = tolower(my_character); 
 	             column++;
@@ -120,13 +127,13 @@ int main(){
 	
 	string rackLetters = "";
 	char myBoard[15][15];
+	bool wildCardSpots[15][15];
 	ifstream boardFile("board.txt");
 	getline(boardFile, rackLetters);
 	transform(rackLetters.begin(), rackLetters.end(), rackLetters.begin(), ::tolower);
-	setBoard(myBoard, isBoardEmpty);
+	setBoard(myBoard, isBoardEmpty, wildCardSpots);
     
     
- 
     
     
     
@@ -157,7 +164,7 @@ int main(){
 	 //cout << rackLetters << endl;
 	 
 	//string temp = "";
-	//rackLetters = "niiaroe";
+	//rackLetters = "ashxxxx";
 	cout << "rackLetters is: " << rackLetters << endl; 
 	map<char, int> rack;
 	map<char, int> letterValues;
@@ -191,11 +198,13 @@ int main(){
 	
 	
 	 //cout << root.children['x']->children['y']->children['z']->computeScore("hello", myBoard, 0, 0) << endl;
+	 
+	 
 	if(isBoardEmpty){
-		root.findEmptyValidWords(rack, myBoard, validWords, letterValues, wildCardIndexes);
+		root.findEmptyValidWords(rack, myBoard, validWords, letterValues, wildCardIndexes, wildCardSpots);
 	}
 	else {
-		root.findValidWords(rack, myBoard, validWords, letterValues, wildCardIndexes);
+		root.findValidWords(rack, myBoard, validWords, letterValues, wildCardIndexes, wildCardSpots);
 	}
 	
 	 //string str = "";

@@ -1,13 +1,19 @@
-
 import bs4
 f=file('scrabble.html')
 lngstr=f.read()
 f.close()
 soup = bs4.BeautifulSoup(lngstr)
 
+sample_cell = ''
+
 def tileData(cell):
+    global sample_cell
     if cell.findChild(attrs={'class':'tile'}):
-        return cell.findChild(attrs={'class':'tile'}).attrs['data-letter']
+        a_tile = cell.findChild(attrs={'class':'tile'})
+        the_letter = a_tile.attrs['data-letter']
+        if a_tile.attrs['data-score'] == '0':
+            the_letter = the_letter.lower()
+        return the_letter #cell.findChild(attrs={'class':'tile'}).attrs['data-letter']
     if 'tripleWord' in cell.attrs['class']:
         return u'9'
     if 'doubleWord' in cell.attrs['class']:
