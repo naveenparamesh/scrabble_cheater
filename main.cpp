@@ -206,7 +206,7 @@ int main(){
 	else {
 		root.findValidWords(rack, myBoard, validWords, letterValues, wildCardIndexes, wildCardSpots);
 	}
-	
+	//string a_word = ""
 	 //string str = "";
 	 //cout << "ban is valid: " << root.hasWord(&*str.begin(), str.length()) << endl;
 	 
@@ -222,6 +222,7 @@ int main(){
 	
 	 int numValidWords = 0;
 	 while(!validWords.empty() && numValidWords < 20){
+	 	
 	 	if(validWords.top()->across){
 	 		cout << validWords.top()->word << " to be played across: " << "at (" << validWords.top()->row << ", "<< validWords.top()->column << ") with score: " << validWords.top()->score << endl;
 	 	}

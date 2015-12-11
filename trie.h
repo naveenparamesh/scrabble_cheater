@@ -478,6 +478,7 @@ struct Trie {
                 if(hasChild(letter)){
                     offset += 1;
                     children[letter]->getRackWords(prefix + letter, rack, row, col, myBoard, validWords, letterValues, root, offset, across, wildcardIndices, wildCardSpots);
+                    offset -= 1; // U CHANGED THIS
                 }
                 
                 
@@ -509,7 +510,6 @@ struct Trie {
                         temp += myBoard[tempRow][col];
                         tempRow += 1;
                     }
-               
                     
                     if(root->hasWord(&*temp.begin(), temp.length())){
                       //  cout << prefix << " is valid down" << "at: "<< row << ", " << col << endl; 
@@ -566,11 +566,11 @@ struct Trie {
             }
             else {//it was a tile with a letter in it, thus directly access whatever is in the tile and use it in children
                 char letter = myBoard[row + offset][col];
-                
                 if(hasChild(letter)){
                    //cout << "happened at bottom for " << letter << endl;
                    offset += 1;
                     children[letter]->getRackWords(prefix + letter, rack, row, col, myBoard, validWords, letterValues, root, offset, across, wildcardIndices, wildCardSpots);
+                    offset -= 1; // U CHANGED THIS
                 }
                
             }
@@ -623,7 +623,7 @@ struct Trie {
     // starting at (row,col), to find playable locations: (locations w/ letters on board)
     bool isPlayable(int row, int col, char myBoard[15][15], bool across){
         if(across){
-             if(isalpha(myBoard[row][col])){//if current position is a letter -> false
+             if(isalpha(myBoard[row][col]) || ((row + 1) < 15 && isalpha(myBoard[row + 1][col])) || (row - 1 >= 0 && isalpha(myBoard[row - 1][col])) || ( col - 1 >= 0 && isalpha(myBoard[row][col - 1]))){//if current position is a letter -> false
                     return true;// this should be false because you can't start playing a word in a spot that is already occupied
                 }
             for(int i = 1; i <= 7; i++){
@@ -637,7 +637,7 @@ struct Trie {
             return false; // no letters found
         }
         else {//check down
-                if(isalpha(myBoard[row][col])){//if current position is a letter -> true
+                if((isalpha(myBoard[row][col])) || (col + 1 < 15 && isalpha(myBoard[row][col + 1])) || (col - 1 >- 0 && isalpha(myBoard[row][col - 1])) || (row - 1 >= 0 && isalpha(myBoard[row - 1][col]))){//if current position is a letter -> true
                     return true;
                 }
             for(int i = 1; i <= 7; i++){
